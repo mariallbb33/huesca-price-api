@@ -1,40 +1,45 @@
 import os
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime, timezone
 
 app = FastAPI()
 
+# Tu clave (Render puede sobreescribirla con Environment variable API_KEY)
 API_KEY = os.getenv("API_KEY", "GG7/.mj=JQbUaby")
+
 
 class ExtractRequest(BaseModel):
     url: str
+    api_key: str
+
 
 class CompareRequest(BaseModel):
     query: str
     city: str
     max_results: int = 20
+    api_key: str
 
-def check_key(x_api_key):
-    if x_api_key != API_KEY:
+
+def check_key(body_api_key: str):
+    if body_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
+
 
 @app.get("/health")
 def health():
     return {"ok": True}
 
-@app.get("/debug-headers")
-def debug_headers(x_api_key: str | None = Header(default=None)):
-    # NO llama a check_key()
-    return {"received_x_api_key": x_api_key}
 
-@app.get("/debug-key")
-def debug_key(x_api_key: str | None = Header(default=None)):
-    return {"received": x_api_key, "expected": API_KEY, "match": x_api_key == API_KEY}
+@app.get("/debug-auth")
+def debug_auth():
+    # No revela la key, solo confirma que el servidor está leyendo "algo"
+    return {"has_api_key": API_KEY is not None, "api_key_len": len(API_KEY)}
+
 
 @app.post("/extract")
-def extract(req: ExtractRequest, x_api_key: str | None = Header(default=None)):
-    check_key(x_api_key)
+def extract(req: ExtractRequest):
+    check_key(req.api_key)
     return {
         "store": "demo",
         "name": "Producto de prueba",
@@ -48,9 +53,10 @@ def extract(req: ExtractRequest, x_api_key: str | None = Header(default=None)):
         "captured_at": datetime.now(timezone.utc).isoformat(),
     }
 
+
 @app.post("/compare")
-def compare(req: CompareRequest, x_api_key: str | None = Header(default=None)):
-    check_key(x_api_key)
+def compare(req: CompareRequest):
+    check_key(req.api_key)
     return {
         "query": req.query,
         "currency": "EUR",
@@ -78,8 +84,4 @@ def compare(req: CompareRequest, x_api_key: str | None = Header(default=None)):
                 "captured_at": datetime.now(timezone.utc).isoformat(),
             },
         ],
-
     }
-
-
-
