@@ -1,10 +1,11 @@
+import os
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from datetime import datetime, timezone
 
 app = FastAPI()
 
-API_KEY = "test-key-123"
+API_KEY = os.getenv("API_KEY", "GG7/.mj=JQbUaby")
 
 class ExtractRequest(BaseModel):
     url: str
@@ -68,4 +69,5 @@ def compare(req: CompareRequest, x_api_key: str | None = Header(default=None)):
                 "captured_at": datetime.now(timezone.utc).isoformat(),
             },
         ],
+
     }
