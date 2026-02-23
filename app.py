@@ -23,6 +23,11 @@ def check_key(x_api_key):
 def health():
     return {"ok": True}
 
+@app.get("/debug-headers")
+def debug_headers(x_api_key: str | None = Header(default=None)):
+    # NO llama a check_key()
+    return {"received_x_api_key": x_api_key}
+
 @app.get("/debug-key")
 def debug_key(x_api_key: str | None = Header(default=None)):
     return {"received": x_api_key, "expected": API_KEY, "match": x_api_key == API_KEY}
@@ -75,5 +80,6 @@ def compare(req: CompareRequest, x_api_key: str | None = Header(default=None)):
         ],
 
     }
+
 
 
