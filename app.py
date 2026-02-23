@@ -22,6 +22,9 @@ def check_key(x_api_key):
 @app.get("/health")
 def health():
     return {"ok": True}
+    @app.get("/debug-key")
+def debug_key(x_api_key: str | None = Header(default=None)):
+    return {"received": x_api_key}
 
 @app.post("/extract")
 def extract(req: ExtractRequest, x_api_key: str | None = Header(default=None)):
@@ -71,3 +74,4 @@ def compare(req: CompareRequest, x_api_key: str | None = Header(default=None)):
         ],
 
     }
+
